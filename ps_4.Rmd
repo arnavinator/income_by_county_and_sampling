@@ -107,6 +107,9 @@ q3 <- upper_bound(geoid = "01055")
 
 ```{r california_map, echo = FALSE}
 
+# make ggplot filling by median income estimate, and use scale_fill to get more
+# distinguishable colors. use geom_sf to get the correct geometry of the map.
+# Finally, used labs to label graph title and legend
 
 calif %>%
   ggplot(aes(fill = estimate)) +
@@ -122,8 +125,20 @@ calif %>%
 ```
 
 
+## Question 3: Publishing to Rpubs
+
+Here is the link to my RPubs Graphic: https://rpubs.com/arnavinator/580919
 
 
+## Question 4: Understanding Tufte Reading
 
+
+## Question 5: Writing a Function
+
+### 5A
+```{r 5a, echo = FALSE}
+
+
+```
 
 
