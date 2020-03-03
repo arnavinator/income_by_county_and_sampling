@@ -1,0 +1,129 @@
+---
+title: "ps_4"
+author: "Arnav Srivastava"
+date: "3/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+# as per basic usage of tidycensus link, importing relavant libraries for
+# tidycensus and using personalized census key to explore census data
+
+library(tidycensus)
+library(tidyverse)
+
+
+# applies proper argument to census_api_key to run census key multiple times and
+# activate (without restarting R... need to do this to avoid warning)
+
+census_api_key("17e6fac7c29f16aa547f2cdb01baeb61a82db36a", install = TRUE, overwrite = TRUE)
+readRenviron("~/.Renviron")
+
+
+
+# this code line prevents R from printing numbers in standard notation, for
+# cleaner/desired numeric display formatting for madlibs and question 2 mappin
+
+options("scipen"=100, "digits"=4)
+
+
+
+# use get_acs to get median household income at the country level for 2018 for
+# madlibs
+
+income <- get_acs(geography = "county", 
+              variables = c(medincome = "B19013_001"),  
+              year = 2018)
+
+
+
+# draw acs data to map median income by county in California for Question 2
+
+calif <- get_acs(geography = "county",
+                 state = "California",
+                 variables = c(medincome = "B19013_001"),  
+                 year = 2018,
+                 geometry = TRUE)
+
+
+```
+
+## Mad Libs
+
+```{r madlibs, echo = FALSE}
+
+# q1; copying function from mad lib 1
+# removed +1 after na.rm assignment (illogical)
+# put a closed parenthesis for the return arg
+# added +1 to return since want sd +1 of a numeric var
+
+sd_plus_one <- function(var, na.rm = TRUE){
+  x <- sd(var, na.rm = na.rm)
+  return(x + 1)
+  }
+
+q1 <- sd_plus_one(income$estimate)
+
+
+# q2; copying function from mad lib 2
+# removed %>%, and set list x to contain 2 parts of countystate
+# then, had pluck take the 2nd item of list, making return irrelavant
+
+
+get_state <- function(countystate){
+  x <- str_split_fixed(countystate, ", ", 2) 
+  pluck(x, 2)
+ }
+
+q2 <- get_state("Treasure County, Montana")
+
+
+
+# q3; copying function from mad lib 3 
+# change entry arg of upper_bound to geoid,
+# so that actually used in function, and also 
+# removed extra parenthesis after pull() function
+
+upper_bound <- function(geoid){
+ income %>% 
+    filter(GEOID == geoid) %>% 
+    mutate(estimate + moe) %>% 
+    pull()
+}
+
+q3 <- upper_bound(geoid = "01055")
+```
+
+**ML 1)** The standard deviation of median income, plus one, is `r q1`.
+
+**ML 2)** Treasure County, Montana is located in the state of `r q2`.
+
+**ML 3)** The upper bound for median income in Etowah County, Alabama (geoid = “01055”) is `r q3`.
+
+
+## Question 2: Mapping
+
+```{r california_map, echo = FALSE}
+
+
+calif %>%
+  ggplot(aes(fill = estimate)) +
+  geom_sf() +
+  scale_fill_viridis_c(option = "plasma",
+                       direction = -1)  +
+  labs(title = "Median Income by County in California",
+       caption = "Source: American Communities Survey 2018",
+       fill = "Median Income") +
+  theme_void()
+
+
+```
+
+
+
+
+
+
+
