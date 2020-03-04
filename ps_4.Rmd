@@ -9,11 +9,12 @@ output: html_document
 knitr::opts_chunk$set(echo = FALSE)
 
 # as per basic usage of tidycensus link, importing relavant libraries for
-# tidycensus and using personalized census key to explore census data
+# tidycensus and using personalized census key to explore census data. 
+# Also upload gt for gt table for 5c)
 
 library(tidycensus)
 library(tidyverse)
-
+library(gt)
 
 # applies proper argument to census_api_key to run census key multiple times and
 # activate (without restarting R... need to do this to avoid warning)
@@ -138,7 +139,88 @@ Here is the link to my RPubs Graphic: https://rpubs.com/arnavinator/580919
 ### 5A
 ```{r 5a, echo = FALSE}
 
+# create get_letters func which samples from letters n times, and then returns the
+# minimum (since R recognizes alphabetical order), essentially returning the
+# earliest alphabet. Made sure to set replace = TRUE so that we can roll the
+# dice more than 26 times and each letter is a possiblity every roll like an
+# actual die
+
+get_letters <- function(n) {
+ min(sample(letters, 
+            size = n, 
+            replace = TRUE)
+     )
+}
+
+
+# calls get_letters with n = 3
+
+get_letters(3)
 
 ```
 
+### 5B
+```{r 5b, echo = FALSE}
 
+# creates roll_alpha_dice, where argument n is set for the number of people who
+# are rolling dice (number of times the map_char function runs get_letters).
+# Meanwhile, the arg letter_count = 3 since we want the function to give three
+# letters per person
+
+roll_alpha_dice <- function(n, letter_count = 3) {
+  map_chr(1:n, ~get_letters(letter_count))
+}
+
+```
+
+(no output requested)
+
+### 5c
+```{r 5c, echo = FALSE}
+
+#see IF CAN DO THIS THE RIGHT WAY
+# made a tibble where the dice was rolled for each TF to give their "lowest" letter
+tf_game <- tibble(game = 1:100,
+                  Alyssa = map_chr(1:100, ~roll_alpha_dice(1)),
+                  Kaneesha = map_chr(1:100, ~roll_alpha_dice(1)),
+                  Mitchell  = map_chr(1:100, ~roll_alpha_dice(1)),
+                  June = map_chr(1:100, ~roll_alpha_dice(1))
+                  )
+
+
+# make a gt table slicing the alpha dice game to the first five turns and
+# formatting into a gt table
+
+tf_game %>% 
+  slice(1:5) %>% 
+  gt(auto_align = TRUE) %>% 
+  tab_header(title = "Alpha Dice Game") %>% 
+  tab_spanner(label = "TF's lowest letter per round",
+              columns = vars(Alyssa,
+                             Kaneesha,
+                             Mitchell,
+                             June
+                             )
+              ) %>% 
+  cols_label(game = "Game Number")
+
+
+
+# now make tibble which counts the number of vowels for Alyssa
+
+tf_game$vowel <- 0
+for (i in 1:100) {
+  if (tf_game[i,2] %in% c("a", "e", "i", "o", "u")) {
+    tf_game[i,6] <- 1
+    } 
+}
+
+sum <- tf_game %>% 
+  summarize(sum = sum(vowel)) %>% 
+  pull(1)
+
+```
+ 
+Alyssa had `r sum` vowels in her game of Alphah Dice.
+
+Collaborators: None.
