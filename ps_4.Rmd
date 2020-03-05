@@ -153,11 +153,15 @@ get_letters <- function(n) {
 }
 
 
-# calls get_letters with n = 3
-
-get_letters(3)
+# calls get_letters with n = 3 in the RMD file
 
 ```
+
+
+
+Call to function with n = 3:
+`r get_letters(3)`
+
 
 ### 5B
 ```{r 5b, echo = FALSE}
@@ -178,42 +182,41 @@ roll_alpha_dice <- function(n, letter_count = 3) {
 ### 5c
 ```{r 5c, echo = FALSE}
 
-#see IF CAN DO THIS THE RIGHT WAY
-# made a tibble where the dice was rolled for each TF to give their "lowest" letter
+# made a tibble where the dice was rolled for each TF to give their "lowest"
+# letter, using rep to make alpha_dice for 4 people 100 times
+
 tf_game <- tibble(game = 1:100,
-                  Alyssa = map_chr(1:100, ~roll_alpha_dice(1)),
-                  Kaneesha = map_chr(1:100, ~roll_alpha_dice(1)),
-                  Mitchell  = map_chr(1:100, ~roll_alpha_dice(1)),
-                  June = map_chr(1:100, ~roll_alpha_dice(1))
-                  )
+                  results = map(rep(4, 100), roll_alpha_dice))
 
 
 # make a gt table slicing the alpha dice game to the first five turns and
-# formatting into a gt table
+# formatting into a gt table.
 
 tf_game %>% 
   slice(1:5) %>% 
   gt(auto_align = TRUE) %>% 
-  tab_header(title = "Alpha Dice Game") %>% 
-  tab_spanner(label = "TF's lowest letter per round",
-              columns = vars(Alyssa,
-                             Kaneesha,
-                             Mitchell,
-                             June
-                             )
-              ) %>% 
-  cols_label(game = "Game Number")
+  tab_header(title = "Alphabet Dice Game") %>% 
+  cols_label(results = "Alyssa, Kaneesha, Mitchell and June")
 
 
 
-# now make tibble which counts the number of vowels for Alyssa
+# mutated tf_game to have a vowel column, which uses map_chr to extract all of
+# Alyssa's rolls, and then assigns TRUE if Alyssa's roll in that round was
+# vowel, else applies FALSE to the vowel column
 
-tf_game$vowel <- 0
-for (i in 1:100) {
-  if (tf_game[i,2] %in% c("a", "e", "i", "o", "u")) {
-    tf_game[i,6] <- 1
-    } 
-}
+tf_game <- tf_game %>% 
+  mutate(vowel = map_lgl(map_chr(tf_game$results, 1), 
+                         ~ ifelse(.[[1]] %in% c("a", "e", "i", "o", "u"), 
+                                  TRUE, 
+                                  FALSE)
+                         )
+         )
+
+
+
+# R is able to treat TRUE as 1 and FALSE as 0, so simply summing vowel column
+# allows us count the number of times Alyssa had TRUE, ie had vowels, in the
+# game
 
 sum <- tf_game %>% 
   summarize(sum = sum(vowel)) %>% 
@@ -221,6 +224,57 @@ sum <- tf_game %>%
 
 ```
  
-Alyssa had `r sum` vowels in her game of Alphah Dice.
+ 
+
+Alyssa had `r sum` vowels in her game of Alpha Dice.
+
+### 5D
+
+```{r 5d, echo = FALSE}
+
+# creates a table which tests 10000 rolls, and creates a column which counts
+# often all of them could roll a vowel in one round of Alpha Dice (with the
+# assignment mechanism similar to the vowel column)
+
+surprised <- tibble(game = 1:10000,
+                    results = map(rep(4, 10000), roll_alpha_dice))
+surprised <- surprised %>% 
+  mutate(perfect_vowel = map_lgl(surprised$results, 
+                         ~ ifelse(all(. %in% c("a", "e", "i", "o", "u")), 
+                                  TRUE,
+                                  FALSE
+                                  )
+                         )
+         )
+
+# similar to how Alyssa's vowel was counted, we count the total number of times
+# all 4 TFs had rolled a vowel and calculated the mean to determine the
+# likelihood of this event - determining how likely this event is to occur!
+
+probab <- surprised %>%
+  pull(perfect_vowel) %>%
+  mean()
+
+```
+
+
+Probability that they all roll a vowel: `r probab`
+
+
+### 5E
+
+```{r 5e, echo = FALSE}
+
+dist <- tibble(results = map_chr(rep(1, 1000), roll_alpha_dice)) %>% 
+  count(results)
+
+dist
+
+ggplot(dist, aes(x = results, y = n)) +
+  geom_col() +
+  labs(title = "Alpha Dice Letter Distribution",
+       x = "Letter",
+       y = "Letter Count")
+```
 
 Collaborators: None.
