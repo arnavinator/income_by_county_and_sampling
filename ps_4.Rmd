@@ -133,6 +133,12 @@ Here is the link to my RPubs Graphic: https://rpubs.com/arnavinator/580919
 
 ## Question 4: Understanding Tufte Reading
 
+There are a few aspects this PowerPoint could improve on. 
+The graphic on slide 2 does not contain numeric detail, as the graphic is more space taking compared to simply listing California's ranking in how high it's state/local taxes are nationwide and compared to the US (where precise numbers can be provided instead of arbitrarily comparing higher and lower states with non-labelled bar graphs).
+Additionally, in slide 14, the pie graph on income tax base broadening is quite uninformative: it is difficult to tell relative differences between inroads on income tax, and this information could be better portrayed in a numeric table or flowchart.
+In slide 5, explaining criteria of tax systems is limited by bullet points, as the audience cannot understand what assumptions regarding a good economy are being made, and there is little information on how "impact of economic activity" is defined. 
+Meanwhile, with slide 7, exploring the negatives of the tax system are restrained by the bullet points, as one is not able to understand why volatility or marginal rates matter as cons of the California tax-system. Bullet points, in an attempt to condense information, make it difficult to understand conclusions in California's tax reform.
+In order to better transmit this PowerPoint into a handout, graphs should have key data ideas be more tangible by including exact numbers and describing trends. Furthermore, bullet points in explaining tax system criteria require greater detail on core assumptions to allow for a better understanding of the criteria and conclusions.
 
 ## Question 5: Writing a Function
 
@@ -159,7 +165,7 @@ get_letters <- function(n) {
 
 
 
-Call to function with n = 3:
+Call to get_letters with n = 3 yields:
 `r get_letters(3)`
 
 
@@ -179,7 +185,7 @@ roll_alpha_dice <- function(n, letter_count = 3) {
 
 (no output requested)
 
-### 5c
+### 5C
 ```{r 5c, echo = FALSE}
 
 # made a tibble where the dice was rolled for each TF to give their "lowest"
@@ -258,23 +264,56 @@ probab <- surprised %>%
 ```
 
 
-Probability that they all roll a vowel: `r probab`
+Probability that all TFs roll a vowel: `r probab`
 
 
 ### 5E
 
 ```{r 5e, echo = FALSE}
 
+# creates a table using map_chr for 1 tf, giving a col with the letter winner
+# each round, and then counts the number of letters for each round
+
 dist <- tibble(results = map_chr(rep(1, 1000), roll_alpha_dice)) %>% 
   count(results)
 
-dist
+
+# plots letter rolled vs number of times the letter was rolled
 
 ggplot(dist, aes(x = results, y = n)) +
   geom_col() +
-  labs(title = "Alpha Dice Letter Distribution",
+  labs(title = "3 Roll Alpha Dice Letter Distribution",
        x = "Letter",
        y = "Letter Count")
 ```
+
+### 5F
+```{r 5f, echo = FALSE}
+
+# since we want to check for distributional change for rolling 5 dice, I copied
+# over roll_alpha_dice and modified it accordingly, changing letter_count to 5
+
+roll_alpha_dice_5 <- function(n, letter_count = 5) {
+  map_chr(1:n, ~get_letters(letter_count))
+}
+
+
+# now we can use the same code from 5E, except we use our new alpha roll
+# function
+
+dist <- tibble(results = map_chr(rep(1, 1000), roll_alpha_dice_5)) %>% 
+  count(results)
+
+
+ggplot(dist, aes(x = results, y = n)) +
+  geom_col() +
+  labs(title = "5 Roll Alpha Dice Letter Distribution",
+       x = "Letter",
+       y = "Letter Count")
+
+
+```
+
+Clearly, the distribution has shifted more towards the earlier letters rolled per round. This makes sense since choosing the earliest letter from 5 dice (compared to choosing the earliest letter amongst 3 dice) gives a higher likelihood to have an earlier letter rolled and chosen as the winner of each round.
 
 Collaborators: None.
